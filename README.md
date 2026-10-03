@@ -26,7 +26,7 @@ That's what we want to find out.
 
 ## How it works
 
-1. **It looks.** The bot searches Bluesky for recent public posts where people say they're looking for a portrait or headshot photographer.
+1. **It looks.** The bot searches social media for recent public posts where people say they're looking for a portrait or headshot photographer.
 2. **It checks.** Before doing anything, it asks Google's Gemini AI two questions. Is this person really asking for portraits of themselves, and not, say, a photographer advertising? Is their profile picture a real photo of one adult? If either answer is no, it moves on.
 3. **It relights.** It sends the profile picture to Gemini with instructions to make a professional portrait (studio backdrop, good lighting, head and shoulders) while keeping the person exactly who they are. Same face, same features, same skin tone, same age. No slimming, smoothing, or "improving."
 4. **It replies.** It posts the portrait as a public reply to the original post, with a short note and an image description that says it was made by AI.
@@ -84,7 +84,7 @@ Either way, we're all going to have to decide what we still want to do ourselves
 
 You need:
 
-- A Bluesky account for the bot. Use a separate one and say it's automated in the bio. Create an app password under **Settings → Privacy and security → App passwords**.
+- A social media account for the bot. Use a separate one, say it's automated in the bio, and sign in with an app password rather than your main password.
 - A Gemini API key from Google AI Studio.
 - Chrome or another modern browser.
 
@@ -98,8 +98,8 @@ Then:
 
 If your browser blocks requests when you open the file directly, run `python3 -m http.server` in this folder and visit `http://localhost:8000`.
 
-Your keys stay in your browser. The page only talks to Bluesky and Google's Gemini API.
+Your keys stay in your browser. The page only talks to the social platform and Google's Gemini API.
 
 ## Credits
 
-Already Taken is an experiment by **The Wavestate Project** on the social and economic implications of artificial intelligence. It's built on Bluesky's open AT Protocol and Google's Gemini models.
+Already Taken is an experiment by **The Wavestate Project** on the social and economic implications of artificial intelligence. It's built on open social media protocols and Google's Gemini models.
