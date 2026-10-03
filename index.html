@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Already Taken</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --seamless: #B9BCBD;   /* studio backdrop paper */
+    --paper: #F5F6F4;      /* contact-sheet print paper */
+    --film: #000;          /* film rebate */
+    --edge: #E8A33D;       /* edge-print numbering */
+    --grease: #C8102E;     /* china-marker red */
+    --ink: #000;
+    --ink-2: #4A4F52;
+    --rule: #9DA1A3;
+    --font: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--seamless); color: var(--ink); font: 400 15px/1.45 var(--font); }
+  a { color: inherit; }
+
+  .masthead { max-width: 1400px; margin: 0 auto; padding: 40px 32px 28px; }
+  h1 { font-weight: 900; font-size: clamp(52px, 10vw, 136px); line-height: .86; letter-spacing: -0.05em; margin: 0; }
+  .statement { max-width: 58ch; margin: 18px 0 0; font-size: 17px; color: var(--ink-2); }
+
+  .layout { max-width: 1400px; margin: 0 auto; padding: 0 32px 56px; display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; }
+
+  .setup { background: var(--paper); padding: 20px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+  .setup section + section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule); }
+  h2 { font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); margin: 10px 0 4px; }
+  input[type=text], input[type=password], input[type=number], textarea, select {
+    width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: #fff;
+    border: 1px solid #8A8F92; border-radius: 2px; padding: 8px 10px;
+  }
+  textarea { resize: vertical; min-height: 76px; }
+  .hint { font-size: 12px; color: var(--ink-2); margin: 4px 0 0; }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink); margin-top: 12px; }
+  .check input { margin-top: 3px; }
+  .who-line { font-size: 13px; margin: 10px 0 0; }
+
+  button { font: inherit; font-size: 14px; font-weight: 700; padding: 9px 14px; border: 2px solid var(--ink); border-radius: 2px; background: var(--ink); color: var(--paper); cursor: pointer; }
+  button.ghost { background: transparent; color: var(--ink); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--grease); outline-offset: 2px; }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 20px; }
+  .auto { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+  .auto input { width: 64px; padding: 7px 8px; }
+  .tally { margin-left: auto; font-weight: 700; }
+
+  .sheet { background: var(--paper); padding: 32px 28px; min-height: 260px; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 40px 30px; }
+  .empty { grid-column: 1 / -1; align-self: center; max-width: 46ch; color: var(--ink-2); margin: 0; }
+
+  .frame { position: relative; }
+  .film { position: relative; background: var(--film); padding: 20px 10px 30px; }
+  .film::before, .film::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 10px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='10'%3E%3Crect x='5' y='1.5' width='8' height='7' rx='1.5' fill='%23F5F6F4'/%3E%3C/svg%3E") repeat-x;
+  }
+  .film::before { top: 5px; }
+  .film::after { bottom: 5px; }
+  .exposures { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .exposures img, .out { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #333; }
+  .out { position: relative; text-decoration: none; }
+  .out span { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; text-align: center; font-size: 12px; color: #9a9a9a; }
+  .out img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .edge { position: absolute; bottom: 15px; font-size: 10px; line-height: 1; font-weight: 700; color: var(--edge); letter-spacing: .02em; }
+  .edge.l { left: 14px; }
+  .edge.r { left: calc(50% + 6px); }
+
+  .mark { position: absolute; left: -12px; top: -12px; width: calc(100% + 24px); height: calc(100% + 24px); pointer-events: none; overflow: visible; }
+  .mark path { fill: none; stroke: var(--grease); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .92;
+    stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s cubic-bezier(.6,.1,.3,1); }
+  .mark path + path { transition-delay: .3s; }
+  .mark.drawn path { stroke-dashoffset: 0; }
+
+  .meta { padding: 12px 2px 0; }
+  .who { margin: 0; font-size: 14px; font-weight: 700; }
+  .who a { text-decoration: none; }
+  .who a:hover { text-decoration: underline; }
+  .who time { font-weight: 400; color: var(--ink-2); font-size: 13px; }
+  .text { margin: 4px 0 0; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .status { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); min-height: 1.45em; }
+  .status.err { color: var(--grease); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .actions button { padding: 7px 12px; font-size: 13px; }
+
+  .log { margin-top: 28px; }
+  .log ol { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow: auto; }
+  .log li { font-size: 13px; padding: 5px 0; border-top: 1px solid var(--rule); }
+  .log li.err { color: var(--grease); }
+  .log time { color: var(--ink-2); margin-right: 6px; }
+
+  .responses { background: var(--paper); padding: 24px 28px; margin-top: 28px; }
+  .responses .controls { margin: 12px 0 18px; }
+  .totals { margin: 0 0 14px; font-size: 15px; }
+  .bars { display: grid; grid-template-columns: max-content 1fr max-content; gap: 6px 12px; align-items: center; max-width: 640px; }
+  .bars > span { font-size: 13px; }
+  .track { display: block; }
+  .bar { display: block; height: 12px; background: var(--film); min-width: 2px; }
+  .bar.zero { background: var(--rule); }
+  .gens { font-size: 14px; margin: 14px 0 0; max-width: 68ch; }
+  .summary { margin-top: 18px; max-width: 68ch; }
+  .summary p { margin: 0 0 10px; font-size: 15px; }
+  .resp-list { list-style: none; margin: 18px 0 0; padding: 0; }
+  .resp-list li { padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; margin-right: 8px; }
+  .tag.flag { color: var(--grease); }
+
+  @media (max-width: 900px) {
+    .responses { padding: 22px 16px; }
+    .masthead { padding: 28px 16px 18px; }
+    .layout { grid-template-columns: 1fr; padding: 0 16px 40px; }
+    .setup { position: static; max-height: none; }
+    .sheet { padding: 22px 16px; }
+    .tally { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mark path { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Already Taken</h1>
+  <p class="statement">People post that they need someone to take their portrait. Their profile picture already is one. This bot finds those posts, relights the picture they already have, and replies with it.</p>
+</header>
+
+<div class="layout">
+  <aside class="setup" aria-label="Setup">
+    <section>
+      <h2>Bluesky account</h2>
+      <label for="handle">Handle</label>
+      <input type="text" id="handle" placeholder="yourbot.bsky.social" autocomplete="username">
+      <label for="appPassword">App password</label>
+      <input type="password" id="appPassword" autocomplete="current-password">
+      <p class="hint">Create one under Settings, Privacy and security, App passwords. Never use your main password here.</p>
+      <label for="pds">Server</label>
+      <input type="text" id="pds">
+      <p style="margin-top:12px"><button id="signInBtn">Sign in</button></p>
+      <p class="who-line" id="whoLine">Not signed in.</p>
+    </section>
+
+    <section>
+      <h2>Gemini</h2>
+      <label for="geminiKey">API key</label>
+      <input type="password" id="geminiKey" autocomplete="off">
+      <label for="imageModel">Portrait model</label>
+      <input type="text" id="imageModel">
+      <label for="screenModel">Screening model</label>
+      <input type="text" id="screenModel">
+    </section>
+
+    <section>
+      <h2>What to look for</h2>
+      <label for="queries">Search phrases, one per line</label>
+      <textarea id="queries" rows="6"></textarea>
+      <label for="maxAge">Ignore posts older than (days)</label>
+      <input type="number" id="maxAge" min="1" max="30">
+    </section>
+
+    <section>
+      <h2>The portrait</h2>
+      <label for="style">Lighting and setting</label>
+      <select id="style">
+        <option value="studio">Studio, painted gray backdrop</option>
+        <option value="window">Window light</option>
+        <option value="mono">Black and white editorial</option>
+        <option value="corporate">Corporate headshot</option>
+        <option value="golden">Outdoors, golden hour</option>
+      </select>
+      <label for="caption">Reply text</label>
+      <textarea id="caption" rows="3"></textarea>
+      <p class="hint">{name} becomes their first name. Bluesky allows 300 characters.</p>
+      <label for="alt">Image description</label>
+      <textarea id="alt" rows="2"></textarea>
+      <p class="hint">{handle} becomes their handle. Screen readers read this aloud.</p>
+    </section>
+
+    <section>
+      <h2>Limits</h2>
+      <label for="dailyCap">Replies per day</label>
+      <input type="number" id="dailyCap" min="1" max="200">
+      <label class="check"><input type="checkbox" id="screen"> Check each post with Gemini before an auto-run reply (skips photographers advertising, logos, pets, cartoons, and anyone who looks under 18)</label>
+      <label class="check"><input type="checkbox" id="remember"> Remember the app password and API key on this computer</label>
+    </section>
+  </aside>
+
+  <main>
+    <div class="controls">
+      <button id="searchBtn">Search posts</button>
+      <div class="auto">
+        <span>Auto-run every</span>
+        <input type="number" id="interval" min="2" max="240" aria-label="Minutes between runs">
+        <span>min, up to</span>
+        <input type="number" id="perRun" min="1" max="20" aria-label="Replies per run">
+        <span>replies per run</span>
+        <button id="autoBtn" class="ghost">Start auto-run</button>
+      </div>
+      <span class="tally" id="tally"></span>
+    </div>
+
+    <div class="sheet" id="sheet" aria-live="polite">
+      <p class="empty" id="empty">Sign in, then search posts. Each person asking for a portrait shows up here as a frame: their profile picture on the left, your portrait on the right.</p>
+    </div>
+
+    <section class="responses" aria-labelledby="respHead">
+      <h2 id="respHead">Responses</h2>
+      <p class="hint">Pulls the replies to every portrait the bot has posted and has Gemini sort each one by reaction. Age and generation count only when someone states their own. Nobody's age is guessed from their face.</p>
+      <div class="controls">
+        <button id="readBtn">Read responses</button>
+        <button id="summaryBtn" class="ghost">Summarize the conversation</button>
+        <button id="exportBtn" class="ghost">Download data</button>
+      </div>
+      <p class="totals" id="respTotals"></p>
+      <div class="bars" id="respBars"></div>
+      <p class="gens" id="respGens"></p>
+      <div class="summary" id="respSummary"></div>
+      <ol class="resp-list" id="respList"></ol>
+    </section>
+
+    <section class="log">
+      <h2>Log</h2>
+      <ol id="log"></ol>
+      <p class="hint">Auto-run works only while this tab stays open.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  // ---------- settings ----------
+  const DEFAULTS = {
+    handle: '', appPassword: '', pds: 'https://bsky.social',
+    geminiKey: '', imageModel: 'gemini-3.1-flash-image', screenModel: 'gemini-3.5-flash',
+    queries: [
+      'looking for a portrait photographer',
+      'need a headshot photographer',
+      'need new headshots',
+      'looking for a photographer for headshots',
+      'recommend a photographer headshots',
+      'need professional headshots'
+    ].join('\n'),
+    maxAge: 3, style: 'studio',
+    caption: "Saw you're looking for someone to take your portrait. You already had one. I just relit it.",
+    alt: "AI-generated studio portrait made from {handle}'s profile picture.",
+    dailyCap: 20, screen: true, remember: false, interval: 10, perRun: 3
+  };
+  const SECRET_KEYS = ['appPassword', 'geminiKey'];
+  const FIELDS = Object.keys(DEFAULTS);
+
+  const STYLES = {
+    studio: 'a classic studio headshot on a hand-painted mottled gray canvas backdrop, soft key light from camera left with gentle fill and a subtle hair light, 85mm lens look, shallow depth of field',
+    window: 'a natural window-light portrait, soft directional daylight from one side, a muted interior background softly out of focus',
+    mono: 'a high-contrast black-and-white editorial portrait, a single hard light source, deep shadows, fine film grain',
+    corporate: 'a clean corporate headshot on a seamless light-gray background, even soft lighting, crisp and polished',
+    golden: 'an outdoor portrait at golden hour, warm low sun as a rim light, soft green background bokeh'
+  };
+
+  const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+    del(k) { try { localStorage.removeItem(k); } catch {} }
+  };
+
+  const $ = id => document.getElementById(id);
+  const sheet = $('sheet'), emptyEl = $('empty'), logEl = $('log');
+
+  function readForm() {
+    const o = {};
+    for (const k of FIELDS) {
+      const el = $(k);
+      if (el.type === 'checkbox') o[k] = el.checked;
+      else if (el.type === 'number') o[k] = Number(el.value) > 0 ? Number(el.value) : DEFAULTS[k];
+      else o[k] = el.value.trim();
+    }
+    o.pds = (o.pds || DEFAULTS.pds).replace(/\/+$/, '');
+    o.handle = o.handle.replace(/^@/, '');
+    return o;
+  }
+  function writeForm(s) {
+    for (const k of FIELDS) {
+      const el = $(k);
+      if (el.type === 'checkbox') el.checked = !!s[k];
+      else el.value = s[k] ?? '';
+    }
+  }
+  function saveSettings() {
+    const s = readForm();
+    const pub = { ...s };
+    for (const k of SECRET_KEYS) delete pub[k];
+    LS.set('at.settings', pub);
+    if (s.remember) LS.set('at.secrets', { appPassword: s.appPassword, geminiKey: s.geminiKey });
+    else LS.del('at.secrets');
+    updateTally();
+  }
+
+  // ---------- history ----------
+  const hist = LS.get('at.history', { posts: {}, authors: {}, days: {} });
+  const saveHist = () => LS.set('at.history', hist);
+  const today = () => new Date().toLocaleDateString('en-CA');
+  const repliesToday = () => hist.days[today()] || 0;
+  const AUTHOR_COOLDOWN = 30 * 86400000;
+  function updateTally() {
+    const cap = readForm().dailyCap;
+    $('tally').textContent = `${repliesToday()} of ${cap} replies today`;
+  }
+
+  // ---------- log ----------
+  function log(msg, kind, link, linkText = 'Open reply') {
+    const li = document.createElement('li');
+    if (kind) li.className = kind;
+    const t = document.createElement('time');
+    t.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    li.append(t, msg);
+    if (link) {
+      const a = document.createElement('a');
+      a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = linkText;
+      li.append(' ', a);
+    }
+    logEl.prepend(li);
+    while (logEl.children.length > 200) logEl.lastChild.remove();
+  }
+
+  // ---------- helpers ----------
+  function clip(text, n) {
+    try {
+      const segs = [...new Intl.Segmenter().segment(text)];
+      return segs.length > n ? segs.slice(0, n).map(s => s.segment).join('') : text;
+    } catch { return text.slice(0, n); }
+  }
+  function fill(template, post) {
+    const name = (post.author.displayName || post.author.handle).trim().split(/\s+/)[0];
+    return template.replaceAll('{name}', name).replaceAll('{handle}', '@' + post.author.handle);
+  }
+  function rel(iso) {
+    const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
+    if (s < 3600) return `${Math.max(1, Math.round(s / 60))}m ago`;
+    if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+    return `${Math.round(s / 86400)}d ago`;
+  }
+  const postUrl = (handleOrDid, uri) => `https://bsky.app/profile/${handleOrDid}/post/${uri.split('/').pop()}`;
+  function b64ToBlob(b64, mime) {
+    const bin = atob(b64), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+  async function normalizeImage(blob, max = 1024) {
+    const bmp = await createImageBitmap(blob);
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return { mime: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.92).split(',')[1] };
+  }
+
+  // ---------- Bluesky ----------
+  let session = null;
+
+  function updateWho() {
+    $('whoLine').textContent = session ? `Signed in as @${session.handle}.` : 'Not signed in.';
+  }
+  function pdsFromDidDoc(doc) {
+    const svc = doc?.service?.find(s => s.id === '#atproto_pds' || s.id?.endsWith('#atproto_pds'));
+    return svc?.serviceEndpoint?.replace(/\/+$/, '');
+  }
+  async function signIn() {
+    const s = readForm();
+    if (!s.handle || !s.appPassword) throw new Error('Enter your Bluesky handle and an app password.');
+    const r = await fetch(`${s.pds}/xrpc/com.atproto.server.createSession`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: s.handle, password: s.appPassword })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.message || `Sign-in failed (${r.status}).`);
+    session = { accessJwt: j.accessJwt, refreshJwt: j.refreshJwt, did: j.did, handle: j.handle, pds: pdsFromDidDoc(j.didDoc) || s.pds };
+    updateWho();
+  }
+  async function refreshSession() {
+    const r = await fetch(`${session.pds}/xrpc/com.atproto.server.refreshSession`, {
+      method: 'POST', headers: { Authorization: `Bearer ${session.refreshJwt}` }
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { session = null; updateWho(); throw new Error('Your Bluesky session expired. Sign in again.'); }
+    session.accessJwt = j.accessJwt; session.refreshJwt = j.refreshJwt;
+  }
+  async function xrpc(nsid, opts = {}, retry = true) {
+    if (!session) throw new Error('Sign in to Bluesky first.');
+    const { method = 'GET', params, json, body, contentType } = opts;
+    const url = new URL(`${session.pds}/xrpc/${nsid}`);
+    if (params) for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+    const headers = { Authorization: `Bearer ${session.accessJwt}` };
+    let payload = body;
+    if (json) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(json); }
+    else if (contentType) headers['Content-Type'] = contentType;
+    const r = await fetch(url, { method, headers, body: payload });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      if (retry && (j.error === 'ExpiredToken' || r.status === 401)) { await refreshSession(); return xrpc(nsid, opts, false); }
+      throw new Error(`Bluesky ${nsid.split('.').pop()}: ${j.message || j.error || r.status}`);
+    }
+    return j;
+  }
+
+  async function findCandidates() {
+    const s = readForm();
+    const queries = s.queries.split('\n').map(q => q.trim()).filter(Boolean);
+    if (!queries.length) throw new Error('Add at least one search phrase.');
+    const seen = new Map();
+    for (const q of queries) {
+      try {
+        const j = await xrpc('app.bsky.feed.searchPosts', { params: { q, sort: 'latest', limit: 25 } });
+        for (const p of j.posts || []) if (!seen.has(p.uri)) seen.set(p.uri, p);
+      } catch (e) { log(`Search for "${q}" failed: ${e.message}`, 'err'); }
+    }
+    const cutoff = Date.now() - s.maxAge * 86400000;
+    const out = [];
+    for (const p of seen.values()) {
+      const t = Date.parse(p.record?.createdAt || p.indexedAt);
+      if (p.author.did === session.did) continue;
+      if (!p.author.avatar) continue;
+      if (isNaN(t) || t < cutoff) continue;
+      if (hist.posts[p.uri]) continue;
+      const last = hist.authors[p.author.did];
+      if (last && Date.now() - last < AUTHOR_COOLDOWN) continue;
+      out.push(p);
+    }
+    out.sort((a, b) => Date.parse(b.indexedAt) - Date.parse(a.indexedAt));
+    return out;
+  }
+
+  async function resolvePds(did) {
+    const url = did.startsWith('did:web:')
+      ? `https://${did.slice(8)}/.well-known/did.json`
+      : `https://plc.directory/${did}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Could not find where their profile picture is stored.');
+    return pdsFromDidDoc(await r.json());
+  }
+  async function fetchAvatar(post) {
+    const url = post.author.avatar;
+    try {
+      const r = await fetch(url);
+      if (r.ok) return await normalizeImage(await r.blob());
+    } catch {}
+    const m = url.match(/\/(did:[^/]+)\/([^@/]+)@/);
+    if (!m) throw new Error('Could not load their profile picture.');
+    const pds = await resolvePds(decodeURIComponent(m[1]));
+    const r = await fetch(`${pds}/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(decodeURIComponent(m[1]))}&cid=${m[2]}`);
+    if (!r.ok) throw new Error('Could not load their profile picture.');
+    return normalizeImage(await r.blob());
+  }
+
+  async function forUpload(img) {
+    const bmp = await createImageBitmap(b64ToBlob(img.data, img.mime));
+    let scale = Math.min(1, 2000 / Math.max(bmp.width, bmp.height)), q = 0.9;
+    for (let i = 0; i < 10; i++) {
+      const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+      const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', q));
+      if (blob && blob.size < 950000) return { blob, w, h };
+      if (q > 0.7) q -= 0.1; else scale *= 0.85;
+    }
+    throw new Error("Couldn't shrink the portrait under Bluesky's 1 MB image limit.");
+  }
+
+  async function postReply(post, up) {
+    const s = readForm();
+    const uploaded = await xrpc('com.atproto.repo.uploadBlob', { method: 'POST', body: up.blob, contentType: 'image/jpeg' });
+    const parent = { uri: post.uri, cid: post.cid };
+    const root = post.record?.reply?.root?.uri ? { uri: post.record.reply.root.uri, cid: post.record.reply.root.cid } : parent;
+    const record = {
+      $type: 'app.bsky.feed.post',
+      text: clip(fill(s.caption, post), 300),
+      createdAt: new Date().toISOString(),
+      langs: ['en'],
+      reply: { root, parent },
+      embed: {
+        $type: 'app.bsky.embed.images',
+        images: [{ alt: clip(fill(s.alt, post), 1000), image: uploaded.blob, aspectRatio: { width: up.w, height: up.h } }]
+      }
+    };
+    return xrpc('com.atproto.repo.createRecord', {
+      method: 'POST', json: { repo: session.did, collection: 'app.bsky.feed.post', record }
+    });
+  }
+
+  // ---------- Gemini ----------
+  async function gemini(model, body) {
+    const s = readForm();
+    if (!s.geminiKey) throw new Error('Add your Gemini API key.');
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': s.geminiKey },
+      body: JSON.stringify(body)
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`Gemini: ${j.error?.message || r.status}`);
+    return j;
+  }
+
+  function portraitPrompt(style) {
+    return [
+      "The attached image is someone's profile picture. Use it as the only reference for who this person is.",
+      `Create a new professional portrait photograph of the same person: ${STYLES[style] || STYLES.studio}.`,
+      'Head-and-shoulders framing, facing the camera or a slight three-quarter turn, natural expression.',
+      'Keep their identity exactly: face shape, features, skin tone, hair, apparent age, and any glasses or facial hair. Do not slim, smooth, or idealize them.',
+      'If more than one person appears, portray only the most prominent one.',
+      'No text, logos, watermarks, or borders.'
+    ].join('\n');
+  }
+
+  async function makePortrait(avatar, style) {
+    const s = readForm();
+    const j = await gemini(s.imageModel, {
+      contents: [{ role: 'user', parts: [{ inline_data: { mime_type: avatar.mime, data: avatar.data } }, { text: portraitPrompt(style) }] }],
+      generationConfig: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { aspectRatio: '4:5' } }
+    });
+    const parts = j.candidates?.[0]?.content?.parts || [];
+    const images = parts.filter(p => (p.inlineData || p.inline_data) && !p.thought);
+    const last = images[images.length - 1];
+    if (!last) {
+      const why = j.promptFeedback?.blockReason || j.candidates?.[0]?.finishReason || 'no image returned';
+      const said = parts.filter(p => p.text && !p.thought).map(p => p.text).join(' ').slice(0, 160);
+      throw new Error(`No portrait came back (${why}).${said ? ' ' + said : ''}`);
+    }
+    const d = last.inlineData || last.inline_data;
+    return { data: d.data, mime: d.mimeType || d.mime_type || 'image/png' };
+  }
+
+  async function screenPost(post, avatar) {
+    const s = readForm();
+    const prompt = [
+      'You screen social media posts for an art project that answers people who are looking for a portrait photographer.',
+      'Post text:',
+      `"""${post.record?.text || ''}"""`,
+      "The attached image is the author's profile picture.",
+      'Reply with JSON only, in this shape:',
+      '{"seeking_portrait_photographer": true or false, "avatar_is_photo_of_a_person": true or false, "reason": "under 12 words"}',
+      'seeking_portrait_photographer is true only when the author wants a photographer to take portraits or headshots of themselves. It is false for photographers advertising, jokes, news, job listings, events, products, weddings, or requests made for someone else.',
+      "avatar_is_photo_of_a_person is true only for a real photograph where one adult's face is clearly visible. It is false for anyone who looks like a child or teenager, and for drawings, logos, pets, objects, and AI avatars. When unsure, answer false."
+    ].join('\n');
+    const j = await gemini(s.screenModel, {
+      contents: [{ role: 'user', parts: [{ inline_data: { mime_type: avatar.mime, data: avatar.data } }, { text: prompt }] }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0 }
+    });
+    const text = (j.candidates?.[0]?.content?.parts || []).filter(p => p.text && !p.thought).map(p => p.text).join('');
+    let v;
+    try { v = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+    catch { throw new Error('The screening answer was unreadable.'); }
+    return { ok: !!(v.seeking_portrait_photographer && v.avatar_is_photo_of_a_person), reason: v.reason || '' };
+  }
+
+  // ---------- frames ----------
+  const frames = new Map();
+  let frameNo = 0;
+
+  const MARKS = {
+    circle: ['M52 4 C80 3 97 20 96 49 C95 79 76 97 48 96 C19 95 3 77 4 47 C5 20 25 5 60 7'],
+    x: ['M10 12 C35 38 62 66 90 90', 'M88 10 C62 36 38 62 12 88']
+  };
+  function drawMark(f, kind) {
+    const svg = f.el.querySelector('.mark');
+    svg.innerHTML = MARKS[kind].map(d => `<path pathLength="1" d="${d}"/>`).join('');
+    svg.classList.remove('drawn');
+    requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.add('drawn')));
+  }
+
+  function setStatus(f, msg, isErr = false, link = null) {
+    const el = f.el.querySelector('.status');
+    el.className = 'status' + (isErr ? ' err' : '');
+    el.textContent = msg;
+    if (link) {
+      const a = document.createElement('a');
+      a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Open reply';
+      el.append(' ', a);
+    }
+  }
+  function setBusy(f, busy) {
+    f.el.querySelector('.make').disabled = busy || f.done;
+    f.el.querySelector('.skip').disabled = busy || f.done;
+    f.el.querySelector('.post').disabled = busy || f.done || !f.portrait;
+  }
+  function finish(f, mark) {
+    f.done = true;
+    setBusy(f, false);
+    drawMark(f, mark);
+  }
+  function showPortrait(f) {
+    const link = f.el.querySelector('.out');
+    if (f.portraitUrl) URL.revokeObjectURL(f.portraitUrl);
+    f.portraitUrl = URL.createObjectURL(b64ToBlob(f.portrait.data, f.portrait.mime));
+    const img = document.createElement('img');
+    img.src = f.portraitUrl;
+    img.alt = `AI portrait made from @${f.post.author.handle}'s profile picture`;
+    link.replaceChildren(img);
+    link.href = f.portraitUrl;
+  }
+
+  function ensureFrame(post) {
+    if (frames.has(post.uri)) return frames.get(post.uri);
+    const n = ++frameNo;
+    const el = document.createElement('article');
+    el.className = 'frame';
+    el.innerHTML = `
+      <div class="film">
+        <div class="exposures">
+          <img class="their" loading="lazy">
+          <a class="out" target="_blank" rel="noopener"><span>Portrait appears here</span></a>
+        </div>
+        <span class="edge l">${n}</span><span class="edge r">${n}A</span>
+        <svg class="mark" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </div>
+      <div class="meta">
+        <p class="who"><a target="_blank" rel="noopener"></a> <time></time></p>
+        <p class="text"></p>
+        <p class="status" role="status"></p>
+        <div class="actions">
+          <button class="make">Make portrait</button>
+          <button class="post ghost" disabled>Post reply</button>
+          <button class="skip ghost">Skip</button>
+        </div>
+      </div>`;
+    const a = post.author;
+    const their = el.querySelector('.their');
+    their.src = a.avatar;
+    their.alt = `Profile picture of @${a.handle}`;
+    const who = el.querySelector('.who a');
+    who.href = postUrl(a.handle, post.uri);
+    who.textContent = a.displayName ? `${a.displayName} @${a.handle}` : `@${a.handle}`;
+    const time = el.querySelector('.who time');
+    time.dateTime = post.record?.createdAt || post.indexedAt;
+    time.textContent = rel(time.dateTime);
+    el.querySelector('.text').textContent = post.record?.text || '';
+
+    const f = { post, el, avatar: null, portrait: null, upload: null, done: false };
+    el.querySelector('.make').addEventListener('click', () => onMake(f));
+    el.querySelector('.post').addEventListener('click', () => onPost(f));
+    el.querySelector('.skip').addEventListener('click', () => onSkip(f));
+    frames.set(post.uri, f);
+    return f;
+  }
+
+  function renderCandidates(list, replace) {
+    const keep = new Set(list.map(p => p.uri));
+    if (replace) for (const [uri, f] of [...frames]) if (!f.done && !keep.has(uri)) frames.delete(uri);
+    const fresh = list.map(ensureFrame);
+    const rest = [...frames.values()].filter(f => !keep.has(f.post.uri));
+    const all = [...fresh, ...rest];
+    sheet.replaceChildren(...(all.length ? all.map(f => f.el) : [emptyEl]));
+  }
+
+  // ---------- actions ----------
+  async function generateFor(f) {
+    setStatus(f, 'Loading their profile picture…');
+    f.avatar ||= await fetchAvatar(f.post);
+    setStatus(f, 'Making the portrait…');
+    f.portrait = await makePortrait(f.avatar, readForm().style);
+    f.upload = null;
+    showPortrait(f);
+  }
+
+  async function replyFor(f) {
+    const s = readForm();
+    if (repliesToday() >= s.dailyCap) throw new Error(`Today's limit of ${s.dailyCap} replies is reached.`);
+    setStatus(f, 'Posting the reply…');
+    f.upload ||= await forUpload(f.portrait);
+    const res = await postReply(f.post, f.upload);
+    const url = postUrl(session.did, res.uri);
+    hist.posts[f.post.uri] = { status: 'replied', at: Date.now() };
+    hist.authors[f.post.author.did] = Date.now();
+    hist.days[today()] = repliesToday() + 1;
+    saveHist(); updateTally();
+    setStatus(f, 'Replied.', false, url);
+    finish(f, 'circle');
+    log(`Replied to @${f.post.author.handle}.`, '', url);
+  }
+
+  async function onMake(f) {
+    setBusy(f, true);
+    try {
+      await generateFor(f);
+      setStatus(f, 'Portrait ready. Post it, try again, or skip.');
+      f.el.querySelector('.make').textContent = 'Try again';
+    } catch (e) {
+      setStatus(f, e.message, true);
+      log(`@${f.post.author.handle}: ${e.message}`, 'err');
+    } finally { setBusy(f, false); }
+  }
+  async function onPost(f) {
+    setBusy(f, true);
+    try { await replyFor(f); }
+    catch (e) { setStatus(f, e.message, true); log(`@${f.post.author.handle}: ${e.message}`, 'err'); }
+    finally { setBusy(f, false); }
+  }
+  function onSkip(f) {
+    hist.posts[f.post.uri] = { status: 'skipped', at: Date.now() };
+    saveHist();
+    setStatus(f, 'Skipped.');
+    finish(f, 'x');
+  }
+
+  async function onSearch() {
+    const btn = $('searchBtn');
+    btn.disabled = true;
+    try {
+      if (!session) throw new Error('Sign in to Bluesky first.');
+      log('Searching…');
+      const list = await findCandidates();
+      renderCandidates(list, true);
+      log(`Found ${list.length} new post${list.length === 1 ? '' : 's'}.`);
+    } catch (e) { log(e.message, 'err'); }
+    finally { btn.disabled = false; }
+  }
+
+  // ---------- auto-run ----------
+  let autoTimer = null, running = false;
+
+  async function autoRun() {
+    if (running || !session) return;
+    running = true;
+    let replied = 0;
+    try {
+      const s = readForm();
+      if (repliesToday() >= s.dailyCap) { log(`Auto-run paused: today's limit of ${s.dailyCap} is reached.`); return; }
+      log('Auto-run: searching…');
+      const list = await findCandidates();
+      renderCandidates(list, false);
+      for (const post of list) {
+        if (replied >= s.perRun || repliesToday() >= s.dailyCap) break;
+        const f = ensureFrame(post);
+        if (f.done) continue;
+        setBusy(f, true);
+        try {
+          if (s.screen) {
+            setStatus(f, 'Checking the post…');
+            f.avatar ||= await fetchAvatar(post);
+            const v = await screenPost(post, f.avatar);
+            if (!v.ok) {
+              hist.posts[post.uri] = { status: 'screened-out', at: Date.now() };
+              saveHist();
+              setStatus(f, `Passed over: ${v.reason || 'not a portrait request'}.`);
+              finish(f, 'x');
+              continue;
+            }
+          }
+          await generateFor(f);
+          await replyFor(f);
+          replied++;
+        } catch (e) {
+          setStatus(f, e.message, true);
+          log(`@${post.author.handle}: ${e.message}`, 'err');
+        } finally { setBusy(f, false); }
+      }
+    } catch (e) { log(e.message, 'err'); }
+    finally {
+      running = false;
+      log(`Auto-run finished: ${replied} repl${replied === 1 ? 'y' : 'ies'}.`);
+    }
+  }
+
+  function toggleAuto() {
+    const btn = $('autoBtn');
+    if (autoTimer) {
+      clearInterval(autoTimer); autoTimer = null;
+      btn.textContent = 'Start auto-run';
+      log('Auto-run stopped.');
+      return;
+    }
+    if (!session) { log('Sign in to Bluesky first.', 'err'); return; }
+    const s = readForm();
+    autoTimer = setInterval(autoRun, s.interval * 60000);
+    btn.textContent = 'Stop auto-run';
+    log(`Auto-run started: every ${s.interval} min, up to ${s.perRun} replies per run.`);
+    autoRun();
+  }
+
+  // ---------- responses: the listening half ----------
+  const REACTIONS = {
+    grateful: 'Grateful', amused: 'Amused', curious: 'Curious', uneasy: 'Uneasy',
+    offended: 'Offended', declines: 'Declines on principle', photographer: 'Photographer pushback', other: 'Other'
+  };
+  const R = LS.get('at.responses', { portraits: {}, replies: {}, summary: '', summaryAt: '' });
+  const saveR = () => LS.set('at.responses', R);
+
+  function pid(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return 'p' + (h >>> 0).toString(36);
+  }
+
+  async function listPortraitPosts(maxPages = 3) {
+    const out = [];
+    let cursor;
+    for (let i = 0; i < maxPages; i++) {
+      const params = { actor: session.did, filter: 'posts_with_replies', limit: 100 };
+      if (cursor) params.cursor = cursor;
+      const j = await xrpc('app.bsky.feed.getAuthorFeed', { params });
+      for (const item of j.feed || []) {
+        const p = item.post;
+        if (p.author.did !== session.did || !p.record?.reply) continue;
+        if (!String(p.embed?.$type || '').startsWith('app.bsky.embed.images')) continue;
+        out.push(p);
+      }
+      cursor = j.cursor;
+      if (!cursor) break;
+    }
+    return out;
+  }
+
+  async function repliesTo(post) {
+    const j = await xrpc('app.bsky.feed.getPostThread', { params: { uri: post.uri, depth: 4, parentHeight: 0 } });
+    const out = [];
+    const walk = node => {
+      for (const r of node?.replies || []) {
+        if (!r.post) continue;
+        if (r.post.author.did !== session.did) out.push(r.post);
+        walk(r);
+      }
+    };
+    walk(j.thread);
+    return out;
+  }
+
+  async function classify(items) {
+    const prompt = [
+      'You are helping study public reactions to an art project called Already Taken. A bot finds people on Bluesky who asked for a portrait photographer, turns the profile picture they already have into an AI studio portrait, and replies with it.',
+      'Below are replies to the bot\'s portrait posts. "recipient" means the person who received the portrait. "onlooker" means anyone else.',
+      'For each item return an object with:',
+      '- id: the item id',
+      '- reaction: one of grateful, amused, curious, uneasy, offended, declines, photographer, other. Use declines when someone rejects the portrait or the idea on principle. Use photographer when a photographer responds about their work or livelihood.',
+      '- ethical_objection: true if the reply raises consent, privacy, honesty, identity, labor, or another ethical concern',
+      '- stated_generation: if the writer states their own age, age range, or generation, give one of Gen Alpha, Gen Z, Millennial, Gen X, Boomer, Silent (convert ages using the year 2026). Otherwise null. Never guess from tone or wording.',
+      '- note: what the reply says, in under 10 words',
+      'Return a JSON array only.',
+      'Items:',
+      JSON.stringify(items.map((r, k) => ({ id: k, speaker: r.speaker, text: r.text })))
+    ].join('\n');
+    const j = await gemini(readForm().screenModel, {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0 }
+    });
+    const text = (j.candidates?.[0]?.content?.parts || []).filter(p => p.text && !p.thought).map(p => p.text).join('');
+    const v = JSON.parse(text.replace(/```json|```/g, '').trim());
+    return Array.isArray(v) ? v : (v.items || v.results || []);
+  }
+
+  async function readResponses() {
+    const btn = $('readBtn');
+    btn.disabled = true;
+    try {
+      if (!session) throw new Error('Sign in to Bluesky first.');
+      log('Reading responses…');
+      const posts = await listPortraitPosts();
+      const fresh = [];
+      for (const p of posts) {
+        const recipient = p.record.reply.parent.uri.split('/')[2];
+        R.portraits[p.uri] = {
+          createdAt: p.record.createdAt, likes: p.likeCount || 0, reposts: p.repostCount || 0,
+          quotes: p.quoteCount || 0, replies: p.replyCount || 0
+        };
+        if (!p.replyCount) continue;
+        try {
+          for (const r of await repliesTo(p)) {
+            if (R.replies[r.uri]?.sorted) { R.replies[r.uri].likes = r.likeCount || 0; continue; }
+            fresh.push({
+              uri: r.uri, portrait: p.uri, handle: r.author.handle,
+              speaker: r.author.did === recipient ? 'recipient' : 'onlooker',
+              text: r.record?.text || '', createdAt: r.record?.createdAt || r.indexedAt, likes: r.likeCount || 0
+            });
+          }
+        } catch (e) { log(e.message, 'err'); }
+      }
+      for (let i = 0; i < fresh.length; i += 25) {
+        const chunk = fresh.slice(i, i + 25);
+        let tags = [];
+        try { tags = await classify(chunk); }
+        catch (e) { log(`Sorting responses failed: ${e.message}`, 'err'); }
+        chunk.forEach((r, k) => {
+          const t = tags.find(x => Number(x.id) === k) || {};
+          R.replies[r.uri] = {
+            ...r,
+            reaction: REACTIONS[t.reaction] ? t.reaction : 'other',
+            ethical_objection: !!t.ethical_objection,
+            stated_generation: t.stated_generation || null,
+            note: t.note || '',
+            sorted: tags.length > 0
+          };
+        });
+      }
+      saveR();
+      renderResponses();
+      log(`Read ${posts.length} portrait${posts.length === 1 ? '' : 's'} and ${fresh.length} new response${fresh.length === 1 ? '' : 's'}.`);
+    } catch (e) { log(e.message, 'err'); }
+    finally { btn.disabled = false; }
+  }
+
+  async function summarize() {
+    const btn = $('summaryBtn');
+    btn.disabled = true;
+    try {
+      const all = Object.values(R.replies).filter(r => r.sorted)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 300);
+      if (!all.length) throw new Error('Read responses first. There is nothing to summarize yet.');
+      log('Summarizing the conversation…');
+      const prompt = [
+        'These are tagged public replies to Already Taken, an art project from The Wavestate Project. A bot finds people on Bluesky asking for a portrait photographer, turns their existing profile picture into an AI studio portrait, and replies with it, uninvited.',
+        `Portraits posted: ${Object.keys(R.portraits).length}. Replies below: ${all.length}.`,
+        'Write a plain-language read of the conversation for a general audience, in four short paragraphs:',
+        '1. How people reacted overall, including how the people who got a portrait reacted compared with onlookers.',
+        '2. The main reasons people welcomed it and the main reasons people objected or refused.',
+        '3. Anything people said about age or generation. Use only self-described generations, and say plainly if there are too few to mean much.',
+        '4. What was surprising, and what question it leaves open.',
+        'Use counts where they help. No headings, no bullet points, no markdown. Do not name, quote, or identify anyone.',
+        'Replies:',
+        JSON.stringify(all.map(r => ({ speaker: r.speaker, reaction: r.reaction, ethical_objection: r.ethical_objection, generation: r.stated_generation, text: r.text })))
+      ].join('\n');
+      const j = await gemini(readForm().screenModel, { contents: [{ role: 'user', parts: [{ text: prompt }] }] });
+      R.summary = (j.candidates?.[0]?.content?.parts || []).filter(p => p.text && !p.thought).map(p => p.text).join('').trim();
+      R.summaryAt = new Date().toISOString();
+      saveR();
+      renderResponses();
+      log('Summary ready.');
+    } catch (e) { log(e.message, 'err'); }
+    finally { btn.disabled = false; }
+  }
+
+  function exportData() {
+    const head = ['response_id', 'portrait_id', 'speaker', 'reaction', 'ethical_objection', 'stated_generation', 'note', 'likes', 'created_at', 'text'];
+    const rows = [head];
+    for (const [uri, r] of Object.entries(R.replies)) {
+      rows.push([pid(uri), pid(r.portrait), r.speaker, r.reaction, r.ethical_objection, r.stated_generation || '', r.note, r.likes, r.createdAt, r.text]);
+    }
+    if (rows.length === 1) { log('No responses to download yet. Read responses first.', 'err'); return; }
+    const csv = rows.map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `already-taken-responses-${today()}.csv`;
+    document.body.append(a); a.click(); a.remove();
+    log(`Downloaded ${rows.length - 1} responses. Handles are replaced with anonymous ids.`);
+  }
+
+  function renderResponses() {
+    const reps = Object.values(R.replies);
+    const nPort = Object.keys(R.portraits).length;
+    const fromRecip = reps.filter(r => r.speaker === 'recipient').length;
+    $('respTotals').textContent = nPort
+      ? `${nPort} portrait${nPort === 1 ? '' : 's'} posted, ${reps.length} response${reps.length === 1 ? '' : 's'}, ${fromRecip} from the people who got a portrait.`
+      : 'No portraits posted yet. Once the bot replies to people, their responses can be read here.';
+
+    const bars = $('respBars');
+    bars.replaceChildren();
+    if (reps.length) {
+      const counts = Object.fromEntries(Object.keys(REACTIONS).map(k => [k, 0]));
+      reps.forEach(r => counts[r.reaction]++);
+      const max = Math.max(1, ...Object.values(counts));
+      for (const [k, label] of Object.entries(REACTIONS)) {
+        const name = document.createElement('span'); name.textContent = label;
+        const track = document.createElement('span'); track.className = 'track';
+        const bar = document.createElement('span'); bar.className = 'bar' + (counts[k] ? '' : ' zero');
+        bar.style.width = `${(counts[k] / max) * 100}%`;
+        track.append(bar);
+        const n = document.createElement('span'); n.textContent = counts[k];
+        bars.append(name, track, n);
+      }
+    }
+
+    const eth = reps.filter(r => r.ethical_objection).length;
+    const gens = {};
+    reps.forEach(r => { if (r.stated_generation) gens[r.stated_generation] = (gens[r.stated_generation] || 0) + 1; });
+    const genText = Object.keys(gens).length
+      ? `Self-described generations: ${Object.entries(gens).map(([g, n]) => `${g} (${n})`).join(', ')}.`
+      : 'Nobody has stated their own age or generation yet.';
+    $('respGens').textContent = reps.length ? `${eth} raised an ethical concern. ${genText}` : '';
+
+    const sum = $('respSummary');
+    sum.replaceChildren();
+    if (R.summary) {
+      R.summary.split(/\n\s*\n/).forEach(par => { const p = document.createElement('p'); p.textContent = par.trim(); sum.append(p); });
+      const when = document.createElement('p'); when.className = 'hint';
+      when.textContent = `Summarized by Gemini on ${new Date(R.summaryAt).toLocaleString()}.`;
+      sum.append(when);
+    }
+
+    const list = $('respList');
+    list.replaceChildren();
+    reps.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 20).forEach(r => {
+      const li = document.createElement('li');
+      const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = REACTIONS[r.reaction];
+      li.append(tag);
+      if (r.ethical_objection) { const f = document.createElement('span'); f.className = 'tag flag'; f.textContent = 'Ethical concern'; li.append(f); }
+      const who = document.createElement('a');
+      who.href = postUrl(r.handle, r.uri); who.target = '_blank'; who.rel = 'noopener';
+      who.textContent = r.speaker === 'recipient' ? 'From the person who got the portrait' : 'From an onlooker';
+      const txt = document.createElement('div'); txt.textContent = r.text;
+      li.append(who, txt);
+      list.append(li);
+    });
+  }
+
+  // ---------- init ----------
+  writeForm({ ...DEFAULTS, ...LS.get('at.settings', {}), ...LS.get('at.secrets', {}) });
+  updateTally(); updateWho();
+  document.querySelectorAll('.setup input, .setup textarea, .setup select, .controls input')
+    .forEach(el => el.addEventListener('change', saveSettings));
+
+  $('signInBtn').addEventListener('click', async () => {
+    const btn = $('signInBtn');
+    btn.disabled = true;
+    try { saveSettings(); await signIn(); log(`Signed in as @${session.handle}.`); }
+    catch (e) { log(e.message, 'err'); $('whoLine').textContent = e.message; }
+    finally { btn.disabled = false; }
+  });
+  $('searchBtn').addEventListener('click', onSearch);
+  $('autoBtn').addEventListener('click', toggleAuto);
+  $('readBtn').addEventListener('click', readResponses);
+  $('summaryBtn').addEventListener('click', summarize);
+  $('exportBtn').addEventListener('click', exportData);
+  renderResponses();
+
+  const s0 = readForm();
+  if (s0.remember && s0.handle && s0.appPassword) {
+    signIn().then(() => log(`Signed in as @${session.handle}.`)).catch(e => log(e.message, 'err'));
+  }
+})();
+</script>
+</body>
+</html>
