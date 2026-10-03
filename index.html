@@ -912,7 +912,7 @@
       if (!all.length) throw new Error('Read responses first. There is nothing to summarize yet.');
       log('Summarizing the conversation…');
       const prompt = [
-        'These are tagged public replies to Already Taken, an art project from The Wavestate Project. A bot finds people on Bluesky asking for a portrait photographer, turns their existing profile picture into an AI studio portrait, and replies with it, uninvited.',
+        'These are tagged public replies to Already Taken, an art project made at a social impact in AI ethics hackathon. A bot finds people on Bluesky asking for a portrait photographer, turns their existing profile picture into an AI studio portrait, and replies with it, uninvited.',
         `Portraits posted: ${Object.keys(R.portraits).length}. Replies below: ${all.length}.`,
         'Write a plain-language read of the conversation for a general audience, in four short paragraphs:',
         '1. How people reacted overall, including how the people who got a portrait reacted compared with onlookers.',

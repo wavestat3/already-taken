@@ -1,6 +1,6 @@
 # Already Taken
 
-**An experiment by The Wavestate Project on the social and economic implications of artificial intelligence.**
+**An experiment built at a hackathon on social impact and AI ethics.**
 
 Every day, someone posts something like this: *"Looking for a photographer. I really need new headshots."*
 
@@ -102,4 +102,4 @@ Your keys stay in your browser. The page only talks to the social platform and G
 
 ## Credits
 
-Already Taken is an experiment by **The Wavestate Project** on the social and economic implications of artificial intelligence. It's built on open social media protocols and Google's Gemini models.
+Already Taken came out of a social impact in AI ethics hackathon. It's built on open social media protocols and Google's Gemini models.
